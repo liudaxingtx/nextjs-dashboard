@@ -8,4 +8,4 @@ const InvoiceFormSchema = z.object({
   date: z.string(),
 });
 
-export const CreateInvoice = InvoiceFormSchema.omit({ id: true, date: true });
+export const UpsertInvoice = InvoiceFormSchema.omit({ id: true, date: true });

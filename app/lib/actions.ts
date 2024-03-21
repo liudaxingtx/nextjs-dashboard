@@ -1,12 +1,12 @@
 'use server';
 
-import { CreateInvoice } from '@/app/lib/schemas';
+import { UpsertInvoice } from '@/app/lib/schemas';
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 export const createInvoice = async (formData: FormData) => {
-  const { customerId, amount, status } = CreateInvoice.parse(
+  const { customerId, amount, status } = UpsertInvoice.parse(
     Object.fromEntries(formData.entries()),
   );
   const amountInCents = amount * 100;
@@ -18,4 +18,26 @@ export const createInvoice = async (formData: FormData) => {
 
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
+};
+
+export const updateInvoice = async (id: string, formData: FormData) => {
+  const { customerId, amount, status } = UpsertInvoice.parse(
+    Object.fromEntries(formData.entries()),
+  );
+  const amountInCents = amount * 100;
+  const date = new Date().toISOString().split('T')[0];
+
+  await sql`UPDATE invoices
+            SET customer_id = ${customerId},
+                amount      = ${amountInCents},
+                status      = ${status},
+                date        = ${date}
+            WHERE id = ${id}`;
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices');
+};
+
+export const deleteInvoice = async (id: string) => {
+  await sql`DELETE FROM invoices WHERE id = ${id}`;
+  revalidatePath('/dashboard/invoices');
 };
